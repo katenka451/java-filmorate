@@ -28,7 +28,7 @@ public class UserControllerTest {
                 .birthday(LocalDate.parse("01.04.1951", formatter))
                 .build();
 
-        assertDoesNotThrow( () -> userController.create(user), "Пользователь не создан");
+        assertDoesNotThrow(() -> userController.create(user), "Пользователь не создан");
     }
 
     @Test
