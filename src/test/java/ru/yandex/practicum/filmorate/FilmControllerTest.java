@@ -30,7 +30,7 @@ public class FilmControllerTest {
                 .duration(Duration.ofMinutes(558))
                 .build();
 
-        assertDoesNotThrow( () -> filmController.create(film), "Фильм не создан");
+        assertDoesNotThrow(() -> filmController.create(film), "Фильм не создан");
     }
 
     @Test

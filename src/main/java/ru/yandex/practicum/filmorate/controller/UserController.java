@@ -84,8 +84,7 @@ public class UserController {
 
         if (users.containsKey(user.getId())) {
             User oldUser = users.get(user.getId());
-            if (!user.getEmail().equals(oldUser.getEmail()) &&
-                    users.values().stream().anyMatch(foundUser -> foundUser.getEmail().equals(user.getEmail()))) {
+            if (!user.getEmail().equals(oldUser.getEmail()) && users.values().stream().anyMatch(foundUser -> foundUser.getEmail().equals(user.getEmail()))) {
                 throwError("E-mail " + user.getEmail() + " уже используется");
             }
         } else {
@@ -114,11 +113,7 @@ public class UserController {
     }
 
     private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
+        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
         return ++currentMaxId;
     }
 }
