@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User newUser) {
-        dataCreationValidation(newUser);
+        validateDataCreation(newUser);
 
         if (newUser.getName() == null || newUser.getName().isBlank()) {
             newUser.setName(newUser.getLogin());
@@ -39,7 +39,7 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-        dataUpdateValidation(newUser);
+        validateDataUpdate(newUser);
 
         User oldUser = users.get(newUser.getId());
 
@@ -49,7 +49,7 @@ public class UserController {
         }
 
         if (newUser.getLogin() != null) {
-            loginValidation(newUser.getLogin());
+            validateLogin(newUser.getLogin());
             oldUser.setLogin(newUser.getLogin());
         }
 
@@ -58,24 +58,24 @@ public class UserController {
         }
 
         if (newUser.getBirthday() != null) {
-            birthdayValidation(newUser.getBirthday());
+            validateBirthday(newUser.getBirthday());
             oldUser.setBirthday(newUser.getBirthday());
         }
 
         return oldUser;
     }
 
-    private void dataCreationValidation(User user) {
+    private void validateDataCreation(User user) {
         log.info("Вызвана операция создания пользователя {}", user.getLogin());
-        loginValidation(user.getLogin());
-        birthdayValidation(user.getBirthday());
+        validateLogin(user.getLogin());
+        validateBirthday(user.getBirthday());
 
         if (users.values().stream().anyMatch(foundUser -> foundUser.getEmail().equals(user.getEmail()))) {
             throwError("Этот e-mail уже используется");
         }
     }
 
-    private void dataUpdateValidation(User user) {
+    private void validateDataUpdate(User user) {
         log.info("Попытка обновления данных пользователя");
 
         if (user.getId() == null) {
@@ -94,13 +94,13 @@ public class UserController {
         log.info("Вызвана операция обновления пользователя: id = {}, name = {}", user.getId(), users.get(user.getId()).getName());
     }
 
-    private void loginValidation(String login) {
+    private void validateLogin(String login) {
         if (login.contains(" ")) {
             throwError("Логин не должен содержать пробелы");
         }
     }
 
-    private void birthdayValidation(LocalDate birthday) {
+    private void validateBirthday(LocalDate birthday) {
         LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC);
         if (today.isBefore(birthday)) {
             throwError("Дата рождения должна быть в прошлом");

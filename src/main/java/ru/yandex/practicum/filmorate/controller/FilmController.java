@@ -28,7 +28,7 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film newFilm) {
-        dataCreationValidation(newFilm);
+        validateDataCreation(newFilm);
 
         newFilm.setId(getNextId());
         films.put(newFilm.getId(), newFilm);
@@ -37,7 +37,7 @@ public class FilmController {
 
     @PutMapping
     public Film update(@Valid @RequestBody Film newFilm) {
-        dataUpdateValidation(newFilm);
+        validateDataUpdate(newFilm);
 
         Film oldFilm = films.get(newFilm.getId());
 
@@ -46,31 +46,31 @@ public class FilmController {
         }
 
         if (newFilm.getDescription() != null) {
-            descriptionValidation(newFilm.getDescription());
+            validateDescription(newFilm.getDescription());
             oldFilm.setDescription(newFilm.getDescription());
         }
 
         if (newFilm.getReleaseDate() != null) {
-            releaseDateValidation(newFilm.getReleaseDate());
+            validateReleaseDate(newFilm.getReleaseDate());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
         }
 
         if (newFilm.getDuration() != null) {
-            durationValidation(newFilm.getDuration());
+            validateDuration(newFilm.getDuration());
             oldFilm.setDuration(newFilm.getDuration());
         }
 
         return oldFilm;
     }
 
-    private void dataCreationValidation(Film film) {
+    private void validateDataCreation(Film film) {
         log.info("Вызвана операция создания фильма {}", film.getName());
-        descriptionValidation(film.getDescription());
-        releaseDateValidation(film.getReleaseDate());
-        durationValidation(film.getDuration());
+        validateDescription(film.getDescription());
+        validateReleaseDate(film.getReleaseDate());
+        validateDuration(film.getDuration());
     }
 
-    private void dataUpdateValidation(Film film) {
+    private void validateDataUpdate(Film film) {
         log.info("Попытка обновления данных фильма");
 
         if (film.getId() == null) {
@@ -84,20 +84,20 @@ public class FilmController {
         log.info("Вызвана операция обновления фильма: id = {}, name = {}", film.getId(), films.get(film.getId()).getName());
     }
 
-    private void descriptionValidation(String description) {
+    private void validateDescription(String description) {
         if (description.length() > 200) {
             throwError("Максимальная длина описания - 200 символов");
         }
     }
 
-    private void releaseDateValidation(LocalDate releaseDate) {
+    private void validateReleaseDate(LocalDate releaseDate) {
         LocalDate cinemaBirthday = LocalDate.parse(FILM_BIRTHDAY, formatter);
         if (releaseDate.isBefore(cinemaBirthday)) {
             throwError("Дата релиза должна быть не раньше 28 декабря 1895 года");
         }
     }
 
-    private void durationValidation(Duration duration) {
+    private void validateDuration(Duration duration) {
         if (duration.toMinutes() < 0) {
             throwError("Продолжительность фильма должна быть положительным числом");
         }
