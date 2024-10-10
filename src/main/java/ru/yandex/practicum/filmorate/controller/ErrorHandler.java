@@ -17,14 +17,14 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidation(final ValidationException e) {
+    public ErrorResponse handleValidation(ValidationException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValid(final MethodArgumentNotValidException e) {
+    public ErrorResponse handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
         String errorText = "Некорректно задано значение поля " +
                 e.getBindingResult().getFieldErrors().getFirst().getField();
         log.error(e.getMessage());
@@ -34,7 +34,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFound(final UserNotFoundException e) {
+    public ErrorResponse handleUserNotFound(UserNotFoundException e) {
         String errorText = "Пользователь с id = " + e.getId().toString() + " не найден";
         log.error(errorText);
         return new ErrorResponse(errorText);
@@ -42,7 +42,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmNotFound(final FilmNotFoundException e) {
+    public ErrorResponse handleFilmNotFound(FilmNotFoundException e) {
         String errorText = "Фильм с id = " + e.getId().toString() + " не найден";
         log.error(errorText);
         return new ErrorResponse(errorText);
@@ -50,7 +50,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
+    public ErrorResponse handleThrowable(Throwable e) {
         String errorText = "Произошла непредвиденная ошибка.";
         log.error(errorText);
         log.error(e.getMessage());
