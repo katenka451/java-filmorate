@@ -7,11 +7,14 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Builder
 public class User {
     Long id;
+    Set<Long> friends;
 
     @NotNull
     @NotBlank
@@ -24,4 +27,18 @@ public class User {
 
     String name;
     LocalDate birthday;
+
+    public void addFriend(Long id) {
+        if (this.friends == null) {
+            this.friends = new HashSet<>();
+        }
+        this.friends.add(id);
+    }
+
+    public void deleteFriend(Long id) {
+        if (this.friends == null) {
+            return;
+        }
+        this.friends.remove(id);
+    }
 }
