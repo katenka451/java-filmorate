@@ -51,8 +51,8 @@ public class UserRepository extends BaseRepository<User> {
         return findMany(FIND_ALL_FRIENDS, userId);
     }
 
-    public List<User> findCommonFriends(Long userId_1, Long userId_2) {
-        return findMany(FIND_COMMON_FRIENDS, userId_1, userId_2);
+    public List<User> findCommonFriends(Long userId1, Long userId2) {
+        return findMany(FIND_COMMON_FRIENDS, userId1, userId2);
     }
 
     public boolean delete(Long userId) {
