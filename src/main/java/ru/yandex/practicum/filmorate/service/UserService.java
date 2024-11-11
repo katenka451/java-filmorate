@@ -69,8 +69,8 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserDto> getCommonFriends(Long userId_1, Long userId_2) {
-        return userRepository.findCommonFriends(getById(userId_1).getId(), getById(userId_2).getId()).stream()
+    public List<UserDto> getCommonFriends(Long userId1, Long userId2) {
+        return userRepository.findCommonFriends(getById(userId1).getId(), getById(userId2).getId()).stream()
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
