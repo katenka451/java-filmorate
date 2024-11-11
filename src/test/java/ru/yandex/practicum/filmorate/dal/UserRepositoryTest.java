@@ -56,15 +56,15 @@ class UserRepositoryTest {
 
     @Test
     void findCommonFriends() {
-        Optional<User> userOptional_1 = userRepository.getById((long) 1);
-        assertThat(userOptional_1)
+        Optional<User> userOptional1 = userRepository.getById((long) 1);
+        assertThat(userOptional1)
                 .isPresent()
                 .hasValueSatisfying(user ->
                         assertThat(user).hasFieldOrPropertyWithValue("id", (long) 1)
                 );
 
-        Optional<User> userOptional_2 = userRepository.getById((long) 2);
-        assertThat(userOptional_2)
+        Optional<User> userOptional2 = userRepository.getById((long) 2);
+        assertThat(userOptional2)
                 .isPresent()
                 .hasValueSatisfying(user ->
                         assertThat(user).hasFieldOrPropertyWithValue("id", (long) 2)
@@ -73,8 +73,8 @@ class UserRepositoryTest {
         List<User> commonFriends = userRepository.findCommonFriends((long) 1, (long) 2);
         assertThat(commonFriends).hasSize(2);
 
-        userRepository.getById((long) 3).ifPresent(user_3 -> assertThat(commonFriends.contains(user_3)).isTrue());
-        userRepository.getById((long) 4).ifPresent(user_4 -> assertThat(commonFriends.contains(user_4)).isTrue());
+        userRepository.getById((long) 3).ifPresent(user3 -> assertThat(commonFriends.contains(user3)).isTrue());
+        userRepository.getById((long) 4).ifPresent(user4 -> assertThat(commonFriends.contains(user4)).isTrue());
     }
 
     @Test

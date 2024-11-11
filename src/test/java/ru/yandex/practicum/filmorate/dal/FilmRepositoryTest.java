@@ -44,8 +44,8 @@ class FilmRepositoryTest {
     void getBestFilms() {
         List<Film> bestFilms = filmRepository.getBestFilms((long) 2);
         assertThat(bestFilms).hasSize(2);
-        filmRepository.getById((long) 1).ifPresent(film_1 -> assertThat(bestFilms.contains(film_1)).isTrue());
-        filmRepository.getById((long) 3).ifPresent(film_3 -> assertThat(bestFilms.contains(film_3)).isTrue());
+        filmRepository.getById((long) 1).ifPresent(film1 -> assertThat(bestFilms.contains(film1)).isTrue());
+        filmRepository.getById((long) 3).ifPresent(film3 -> assertThat(bestFilms.contains(film3)).isTrue());
     }
 
     @Test

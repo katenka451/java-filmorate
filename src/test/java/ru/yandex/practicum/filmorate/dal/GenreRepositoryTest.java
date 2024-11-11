@@ -32,8 +32,8 @@ class GenreRepositoryTest {
     void findByFilmId() {
         List<Genre> genreForFilm = genreRepository.findByFilmId((long) 4);
         assertThat(genreForFilm).hasSize(2);
-        genreRepository.getById((long) 1).ifPresent(genre_1 -> assertThat(genreForFilm.contains(genre_1)).isTrue());
-        genreRepository.getById((long) 6).ifPresent(genre_6 -> assertThat(genreForFilm.contains(genre_6)).isTrue());
+        genreRepository.getById((long) 1).ifPresent(genre1 -> assertThat(genreForFilm.contains(genre1)).isTrue());
+        genreRepository.getById((long) 6).ifPresent(genre6 -> assertThat(genreForFilm.contains(genre6)).isTrue());
     }
 
     @Test
