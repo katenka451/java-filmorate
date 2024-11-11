@@ -1,108 +1,121 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.mapper.UserMapper;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
+    private final FriendService friendService;
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
+    public List<UserDto> findAll() {
+        return userRepository.findAll().stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    public Collection<User> findAll() {
-        return userStorage.findAll();
+    public UserDto getById(Long id) {
+        return userRepository.getById(id)
+                .map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public User getById(Long id) {
-        return userStorage.getById(id);
+    public UserDto create(UserDto newUser) {
+        validateDataCreation(newUser);
+        return UserMapper.mapToUserDto(userRepository.create(UserMapper.mapDtoToUser(newUser)));
     }
 
-    public User create(User newUser) {
-        return userStorage.create(newUser);
+    public UserDto update(UserDto newUser) {
+        validateDataUpdate(newUser);
+        return UserMapper.mapToUserDto(userRepository.update(UserMapper.mapDtoToUser(newUser)));
     }
 
-    public User update(User newUser) {
-        return userStorage.update(newUser);
+    public boolean delete(Long id) {
+        return userRepository.delete(id);
     }
 
-    public void delete(Long id) {
-        userStorage.delete(id);
-    }
-
-    public User addToFriends(Long userId, Long friendId) {
-        checkUser(userId);
-        checkUser(friendId);
-
+    public boolean addToFriends(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
             String errorText = "Пользователь не может добавить в друзья сам себя";
             log.error(errorText);
             throw new ValidationException(errorText);
         }
 
-        userStorage.getById(userId).addFriend(friendId);
-        userStorage.getById(friendId).addFriend(userId);
-
-        return userStorage.getById(userId);
+        return friendService.create(getById(userId).getId(), getById(friendId).getId());
     }
 
-    public User deleteFromFriends(Long userId, Long notFriendAnymoreId) {
-        checkUser(userId);
-        checkUser(notFriendAnymoreId);
-
-        userStorage.getById(userId).deleteFriend(notFriendAnymoreId);
-        userStorage.getById(notFriendAnymoreId).deleteFriend(userId);
-
-        return userStorage.getById(userId);
+    public boolean deleteFromFriends(Long userId, Long friendId) {
+        return friendService.delete(getById(userId).getId(), getById(friendId).getId());
     }
 
-    public List<User> getUserFriends(Long userId) {
-        checkUser(userId);
+    public List<UserDto> getUserFriends(Long userId) {
+        return userRepository.findAllFriends(getById(userId).getId()).stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
+    }
 
-        Set<Long> friendsList = userStorage.getById(userId).getFriends();
-        if (friendsList == null) {
-            return Collections.emptyList();
+    public List<UserDto> getCommonFriends(Long userId_1, Long userId_2) {
+        return userRepository.findCommonFriends(getById(userId_1).getId(), getById(userId_2).getId()).stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
+    }
+
+    private void validateDataCreation(UserDto user) {
+        log.info("Вызвана операция создания пользователя {}", user.getLogin());
+        validateLogin(user.getLogin());
+        validateBirthday(LocalDate.parse(user.getBirthday()));
+
+        if (userRepository.isEmailUsed(user.getEmail())) {
+            throw new ValidationException("Этот e-mail уже используется");
+        }
+    }
+
+    private void validateDataUpdate(UserDto user) {
+        log.info("Вызвана операция обновления пользователя {}", user.getLogin());
+
+        if (user.getId() == null) {
+            throw new ValidationException("Id должен быть указан");
+        }
+        if (getById(user.getId()) == null) {
+            throw new UserNotFoundException(user.getId());
+        }
+        if (user.getLogin() != null && !user.getLogin().isEmpty()) {
+            validateLogin(user.getLogin());
+        }
+        if (user.getBirthday() != null && !user.getBirthday().isEmpty()) {
+            validateBirthday(LocalDate.parse(user.getBirthday()));
         }
 
-        return userStorage.findAll().stream()
-                .filter(user -> friendsList.contains(user.getId()))
-                .toList();
-    }
-
-    public List<User> getCommonFriends(Long userId, Long otherId) {
-        checkUser(userId);
-        checkUser(otherId);
-
-        Set<Long> userFriendsList = userStorage.getById(userId).getFriends();
-        Set<Long> otherFriendsList = userStorage.getById(otherId).getFriends();
-        if (userFriendsList == null || otherFriendsList == null) {
-            return Collections.emptyList();
+        if (userRepository.isEmailUsed(user.getEmail())) {
+            throw new ValidationException("Этот e-mail уже используется");
         }
-
-        userFriendsList.retainAll(otherFriendsList);
-
-        return userStorage.findAll().stream()
-                .filter(user -> userFriendsList.contains(user.getId()))
-                .toList();
     }
 
-    public void checkUser(Long userId) {
-        if (!userStorage.exists(userId)) {
-            throw new UserNotFoundException(userId);
+    private void validateLogin(String login) {
+        if (login.contains(" ")) {
+            throw new ValidationException("Логин не должен содержать пробелы");
+        }
+    }
+
+    private void validateBirthday(LocalDate birthday) {
+        LocalDate today = LocalDate.ofInstant(Instant.now(), ZoneOffset.UTC);
+        if (today.isBefore(birthday)) {
+            throw new ValidationException("Дата рождения должна быть в прошлом");
         }
     }
 

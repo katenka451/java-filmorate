@@ -1,2 +1,4 @@
 # java-filmorate
-Template repository for Filmorate project.
+Repository for Filmorate project.
+
+![Filmorate DB scheme](/src/main/resources/filmorate.svg)
