@@ -4,10 +4,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
+import org.springframework.web.server.ResponseStatusException;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
 import java.util.List;
 
 @RestController
@@ -23,43 +23,49 @@ public class FilmController {
     }
 
     @GetMapping
-    public Collection<Film> findAll() {
+    public List<FilmDto> findAll() {
         return filmService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Film getById(@PathVariable Long id) {
+    public FilmDto getById(@PathVariable Long id) {
         return filmService.getById(id);
     }
 
     @GetMapping("/popular")
-    public List<Film> getBestFilms(@RequestParam(required = false) Long count) {
+    public List<FilmDto> getBestFilms(@RequestParam(name = "count", required = false) Long count) {
         return filmService.getBestFilms((count == null || count == 0) ? COUNT : count);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Film create(@Valid @RequestBody Film newFilm) {
+    public FilmDto create(@Valid @RequestBody FilmDto newFilm) {
         return filmService.create(newFilm);
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
-        return filmService.update(newFilm);
+    public FilmDto update(@Valid @RequestBody FilmDto filmUpdate) {
+        return filmService.update(filmUpdate);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public Film addLike(@PathVariable Long id, @PathVariable Long userId) {
-        return filmService.addLike(id, userId);
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        if (!filmService.addLike(id, userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable Long id) {
-        filmService.delete(id);
+        if (!filmService.delete(id)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public Film deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        return filmService.deleteLike(id, userId);
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        if (!filmService.deleteLike(id, userId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 }
